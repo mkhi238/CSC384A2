@@ -95,9 +95,47 @@ def prop_FC(csp, newVar=None):
        only one uninstantiated variable. Remember to keep
        track of all pruned variable,value pairs and return '''
     #IMPLEMENT
+    pruned_values = {}
+    if not newVar:
+        for c in csp.get_all_cons():
+            if c.get_n_unasgn() == 1:
+                unassigned_variable = c.get_unasgn_vars()[0]
+                for i in unassigned_variable.cur_domain():
+                    if c.has_support(unassigned_variable,i) == False:
+                        unassigned_variable.prune_value(i)
+                        if unassigned_variable not in pruned_values:
+                            pruned_values[unassigned_variable] = []
+                        pruned_values[unassigned_variable].append((unassigned_variable, i))
+                
+                if unassigned_variable.cur_domain_size() == 0:
+                    all_prunes = []
+                    for v in pruned_values.values():
+                        for b in v:
+                            all_prunes.append(b)
+                    return False, all_prunes
     
-    return False, []
-
+    else:
+        for c in csp.get_cons_with_var(newVar):
+            if c.get_n_unasgn() == 1:
+                unassigned_variable = c.get_unasgn_vars()[0]
+                for i in unassigned_variable.cur_domain():
+                    if c.has_support(unassigned_variable,i) == False:
+                        unassigned_variable.prune_value(i)
+                        if unassigned_variable not in pruned_values:
+                            pruned_values[unassigned_variable] = []
+                        pruned_values[unassigned_variable].append((unassigned_variable, i))
+                
+                if unassigned_variable.cur_domain_size() == 0:
+                    all_prunes = []
+                    for b in pruned_values.values():
+                        for t in b:
+                            all_prunes.append(t)
+                    return False, all_prunes
+    pruned_list = []
+    for p in pruned_values.values():
+        for b in p:
+            pruned_list.append(b)
+    return True, pruned_list
 
 def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 

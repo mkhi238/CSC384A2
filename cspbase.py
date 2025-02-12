@@ -55,7 +55,7 @@ class Variable:
            The assigned value must be from the variable domain, and
            you cannot assign to an already assigned variable.
 
-           You can get the assigned value e.g., to find the solution after
+           You can the assigned value e.g., to find the solution after
            search.
            
            Assignments and current domain interact at the external interface
