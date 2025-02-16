@@ -96,53 +96,64 @@ def prop_FC(csp, newVar=None):
        track of all pruned variable,value pairs and return '''
     #IMPLEMENT
     pruned_values = {}
-    if not newVar:
-        for c in csp.get_all_cons():
-            if c.get_n_unasgn() == 1:
-                unassigned_variable = c.get_unasgn_vars()[0]
-                for i in unassigned_variable.cur_domain():
-                    if c.has_support(unassigned_variable,i) == False:
-                        unassigned_variable.prune_value(i)
-                        if unassigned_variable not in pruned_values:
-                            pruned_values[unassigned_variable] = []
-                        pruned_values[unassigned_variable].append((unassigned_variable, i))
-                
-                if unassigned_variable.cur_domain_size() == 0:
-                    all_prunes = []
-                    for v in pruned_values.values():
-                        for b in v:
-                            all_prunes.append(b)
-                    return False, all_prunes
-    
+    if newVar == None:
+        cons = list(csp.get_all_cons())  
     else:
-        for c in csp.get_cons_with_var(newVar):
-            if c.get_n_unasgn() == 1:
-                unassigned_variable = c.get_unasgn_vars()[0]
-                for i in unassigned_variable.cur_domain():
-                    if c.has_support(unassigned_variable,i) == False:
-                        unassigned_variable.prune_value(i)
-                        if unassigned_variable not in pruned_values:
-                            pruned_values[unassigned_variable] = []
-                        pruned_values[unassigned_variable].append((unassigned_variable, i))
+        cons = list(csp.get_cons_with_var(newVar))  
+
+    for c in cons:
+        if c.get_n_unasgn() == 1:
+            unassigned_variable = c.get_unasgn_vars()[0]
+
+            for i in unassigned_variable.cur_domain():
+                if c.has_support(unassigned_variable,i) == False:
+                    
+                    unassigned_variable.prune_value(i)
+                    if unassigned_variable not in pruned_values:
+                        pruned_values[unassigned_variable] = []
+                    pruned_values[unassigned_variable].append((unassigned_variable, i))
                 
-                if unassigned_variable.cur_domain_size() == 0:
-                    all_prunes = []
-                    for b in pruned_values.values():
-                        for t in b:
-                            all_prunes.append(t)
-                    return False, all_prunes
-    pruned_list = []
-    for p in pruned_values.values():
-        for b in p:
-            pruned_list.append(b)
-    return True, pruned_list
+            if unassigned_variable.cur_domain_size() == 0:
+                all_prunes = [pair for v in pruned_values.values() for pair in v]
+                return False, all_prunes
+        
+    all_prunes = [pair for v in pruned_values.values() for pair in v]
+    return True, all_prunes
 
 def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
-    return False, []
+    pruned_values = {}
+
+    if newVar == None:
+        queue = list(csp.get_all_cons())  
+    else:
+        queue = list(csp.get_cons_with_var(newVar))  
+
+    while len(queue) > 0:
+        constraint = queue.pop(0)
+
+        for i in constraint.get_scope():         
+            for j in i.cur_domain():            
+                if constraint.has_support(i,j) == False:
+                    i.prune_value(j)
+
+                    if i not in pruned_values:
+                        pruned_values[i] = []
+                    pruned_values[i].append((i,j))
+                    
+                    if i.cur_domain_size() == 0:
+                        all_prunes = [pair for v in pruned_values.values() for pair in v]
+                        return False, all_prunes
+                        
+                    for remaining_constraints in csp.get_cons_with_var(i):
+                        if remaining_constraints not in queue:
+                            queue.append(remaining_constraints)
+
+    all_prunes = [pair for v in pruned_values.values() for pair in v]
+    return True, all_prunes
 
 
 
