@@ -112,10 +112,58 @@ def futoshiki_csp_model_1(futo_grid):
 
     return csp, all_vars
 
-
-
-
-
 def futoshiki_csp_model_2(futo_grid):
     ##IMPLEMENT
-    pass
+    dom = []
+    for i in range(1,len(futo_grid)+1):
+        dom.append(i)
+
+    all_vars = []
+
+    for i in range(len(futo_grid)):
+        row_vars = []
+        for j in range(len(futo_grid[i])):
+            if type(futo_grid[i][j]) == int:
+                if futo_grid[i][j] == 0:
+                    row_vars.append(Variable(f'X{i}{j}', dom.copy()))
+                else:
+                    row_vars.append(Variable(f'X{i}{j}', [futo_grid[i][j]]))
+        all_vars.append(row_vars)
+
+    cons = []
+    for i in range(len(futo_grid)):
+        con = Constraint(f'Row-{i}-AllDiff', all_vars[i])
+        sat_list = [list(j) for j in itertools.permutations(dom, len(futo_grid))]
+        con.add_satisfying_tuples(sat_list)
+        cons.append(con)
+
+    
+    column_group = [[all_vars[row][col] for row in range(len(futo_grid))] for col in range(len(futo_grid))]
+    for i in range(len(column_group)):
+        con = Constraint(f'Col-{i}-AllDiff', column_group[i])  
+        sat_list = [list(k) for k in itertools.permutations(dom, len(futo_grid))]
+        con.add_satisfying_tuples(sat_list)
+        cons.append(con)
+            
+    for i in range(len(futo_grid)):
+        for j in range(len(futo_grid[i])):
+            if futo_grid[i][j] == '<':
+                lp = all_vars[i][j // 2] 
+                rp = all_vars[i][(j // 2) + 1]  
+                con = Constraint(f'Ineq{i}{j}',[lp,rp])
+                sat_list = [(x,y) for x in dom for y in dom if x < y]
+                con.add_satisfying_tuples(sat_list)
+                cons.append(con)
+
+            elif futo_grid[i][j] == '>':
+                lp = all_vars[i][j // 2]  
+                rp = all_vars[i][(j // 2) + 1]  
+                con = Constraint(f'Ineq{i}{j}',[lp,rp])
+                sat_list = [(x,y) for x in dom for y in dom if x > y]
+                con.add_satisfying_tuples(sat_list)
+                cons.append(con)
+    csp = CSP("Futoshiki_CSP_Model_2", [j for i in all_vars for j in i])
+    for i in cons:
+        csp.add_constraint(i)
+
+    return csp, all_vars
