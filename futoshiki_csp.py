@@ -92,16 +92,16 @@ def futoshiki_csp_model_1(futo_grid):
     for i in range(len(futo_grid)):
         for j in range(len(futo_grid[i])):
             if futo_grid[i][j] == '<':
-                lp = all_vars[i][j//2]
-                rp = all_vars[i][(j//2)+1]
+                lp = all_vars[i][j // 2] 
+                rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 sat_list = [(x,y) for x in dom for y in dom if x < y]
                 con.add_satisfying_tuples(sat_list)
                 cons.append(con)
 
             elif futo_grid[i][j] == '>':
-                lp = all_vars[i][j//2]
-                rp = all_vars[i][(j//2)+1]
+                lp = all_vars[i][j // 2]  
+                rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 sat_list = [(x,y) for x in dom for y in dom if x > y]
                 con.add_satisfying_tuples(sat_list)
@@ -110,7 +110,8 @@ def futoshiki_csp_model_1(futo_grid):
     for i in cons:
         csp.add_constraint(i)
 
-    return csp
+    return csp, all_vars
+
 
 
 
