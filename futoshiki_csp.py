@@ -167,3 +167,5 @@ def futoshiki_csp_model_2(futo_grid):
         csp.add_constraint(i)
 
     return csp, all_vars
+
+
