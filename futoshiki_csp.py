@@ -87,6 +87,7 @@ def futoshiki_csp_model_1(futo_grid):
                 #all_vars is the list of variables (excluding the inequalities), so we can index on this 
                 con = Constraint(f'Row-{i}-X{i}{j}-X{i}{k}', [all_vars[i][j], all_vars[i][k]])  
                 #satisfiable variabels are any variable not equal to itself
+                sat_list = []
                 for x in dom: 
                     for y in dom:  
                         if x != y:  
@@ -121,6 +122,7 @@ def futoshiki_csp_model_1(futo_grid):
                 rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 #Satisfiable variables are any value y greater than x
+                sat_list = []
                 for x in dom: 
                     for y in dom:  
                         if x < y:  
@@ -136,6 +138,7 @@ def futoshiki_csp_model_1(futo_grid):
                 rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 #Satisfiable variables are any value y less than x
+                sat_list = []
                 for x in dom: 
                     for y in dom:  
                         if x > y:  
@@ -224,6 +227,7 @@ def futoshiki_csp_model_2(futo_grid):
                 rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 #Satisfiable variables are any value y greater than x
+                sat_list = []
                 for x in dom: 
                     for y in dom:  
                         if x < y:  
@@ -239,6 +243,7 @@ def futoshiki_csp_model_2(futo_grid):
                 rp = all_vars[i][(j // 2) + 1]  
                 con = Constraint(f'Ineq{i}{j}',[lp,rp])
                 #Satisfiable variables are any value y less than x
+                sat_list = []
                 for x in dom: 
                     for y in dom:  
                         if x > y:  
