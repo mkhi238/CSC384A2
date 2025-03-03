@@ -95,82 +95,128 @@ def prop_FC(csp, newVar=None):
        only one uninstantiated variable. Remember to keep
        track of all pruned variable,value pairs and return '''
     #IMPLEMENT
+
+    #Create a dictionairy for pruned values 
     pruned_values = {}
+
+    #If there is no newVar, make a list of all the constraints in the CSP, otherwise make a list of all constraints with the variable in scope
     if newVar == None:
         cons = list(csp.get_all_cons())  
     else:
         cons = list(csp.get_cons_with_var(newVar))  
 
+    #Iterate and get constraints with only 1 unassigned variable    
     for c in cons:
         if c.get_n_unasgn() == 1:
-            unassigned_variable = c.get_unasgn_vars()[0]
+            
+            unassigned_variable = c.get_unasgn_vars()[0] #Get unassigned variable
 
+            #See if any value in the domain of the unassigned variable has a support
             for i in unassigned_variable.cur_domain():
-                if c.has_support(unassigned_variable,i) == False:
-                    
+                if c.has_support(unassigned_variable,i) == False:   
+                    #If no support, prune the value
                     unassigned_variable.prune_value(i)
+                    #Add the variable to the dictornairy if its not there already
                     if unassigned_variable not in pruned_values:
-                        pruned_values[unassigned_variable] = []
+                        pruned_values[unassigned_variable] = [] #Intialize empty list
+                    #Add pruned value to the dictionary 
                     pruned_values[unassigned_variable].append((unassigned_variable, i))
-                
+            
+            #If the domain becomes empty, return domain wipeout
             if unassigned_variable.cur_domain_size() == 0:
-                all_prunes = [pair for v in pruned_values.values() for pair in v]
-                return False, all_prunes
+                all_prunes = []
+                #Add the pruned values to the list of all pruned values
+                for i in pruned_values.values():  
+                    for j in i:  
+                        all_prunes.append(j)  
+
+                return False, all_prunes #Return no support (False), and all the pruned values
         
-    all_prunes = [pair for v in pruned_values.values() for pair in v]
-    return True, all_prunes
+    all_prunes = []
+    #Add the pruned values to the list of all pruned values
+    for i in pruned_values.values():  
+        for j in i:  
+            all_prunes.append(j)  
+    return True, all_prunes #Return True and all the pruned values
+
+
 
 def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
+
+    #Create a dictionairy for pruned values
     pruned_values = {}
 
+    #If there is no newVar, make a queue all the constraints in the CSP, otherwise make a queue of all constraints with the variable in scope
     if newVar == None:
         queue = list(csp.get_all_cons())  
     else:
         queue = list(csp.get_cons_with_var(newVar))  
 
+    #While the queue is not empty
     while len(queue) > 0:
+        #Take the first constraint
         constraint = queue.pop(0)
 
-        for i in constraint.get_scope():         
-            for j in i.cur_domain():            
-                if constraint.has_support(i,j) == False:
+        #For all variables in the contraints scope
+        for i in constraint.get_scope(): 
+            #For all values in the variables domain        
+            for j in i.cur_domain():  
+                #Check if a constraint has a support for value i          
+                if constraint.has_support(i,j) == False:    
+                    #If no support, prune i
                     i.prune_value(j)
-
+                    #Add i,j to the list of pruned values
                     if i not in pruned_values:
                         pruned_values[i] = []
                     pruned_values[i].append((i,j))
                     
+                    #If we get a domain wipeout
                     if i.cur_domain_size() == 0:
-                        all_prunes = [pair for v in pruned_values.values() for pair in v]
-                        return False, all_prunes
-                        
+                        all_prunes = []
+                        #Add the pruned values to the list of all pruned values
+                        for i in pruned_values.values():  
+                            for j in i:  
+                                all_prunes.append(j)  
+                        return False, all_prunes    #Return no support (False), and all the pruned values
+                    
+                    #Add all the constraints with variable i in scope back to the queue if it is not in the queue currently
                     for remaining_constraints in csp.get_cons_with_var(i):
                         if remaining_constraints not in queue:
                             queue.append(remaining_constraints)
 
-    all_prunes = [pair for v in pruned_values.values() for pair in v]
-    return True, all_prunes
+    all_prunes = []
+    #Add the pruned values to the list of all pruned values
+    for i in pruned_values.values():  
+        for j in i:  
+            all_prunes.append(j)  
+    return True, all_prunes     #Return True and all the pruned values
 
 
 
 def ord_mrv(csp):
     ''' return variable according to the Minimum Remaining Values heuristic '''
     #IMPLEMENT
- 
+
+    #If there is no unassigned variables, return none
     if len(csp.get_all_unasgn_vars()) == 0:
         return None
     
-    min_var = None
-    min_var_domain_size = 100000000
+    #Intial min var domain size very large and variable to None
+    min_var = None  
+    min_var_domain_size = 100000000 
+
+    #Get all the unassinged variables
     for i in csp.get_all_unasgn_vars():
-        if i.cur_domain_size() < min_var_domain_size:
+        #Check domain size of unassigned variables
+        if i.cur_domain_size() < min_var_domain_size:   
+            #if domain size is smaller than current best, replace
             min_var = i
             min_var_domain_size = i.cur_domain_size()
         else:
             continue
 
-    return min_var
+    return min_var  #Return the minimum value
